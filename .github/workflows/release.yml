@@ -1,26 +1,59 @@
 name: release
+
+# Two ways to publish a release:
+#  1. Actions tab → "release" → Run workflow → enter a version like v1.0.0
+#  2. Push a tag: git tag v1.0.0 && git push origin v1.0.0
 on:
   push:
     tags: ["v*"]
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version / tag (e.g. v1.0.0)"
+        required: true
+        default: "v1.0.0"
+
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
-    permissions:
-      contents: write
+    env:
+      VERSION: ${{ github.event.inputs.version || github.ref_name }}
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-go@v5
-        with: { go-version: "1.22" }
-      - run: go test ./...
-      - run: |
-          for arch in amd64 arm64; do
-            GOOS=windows GOARCH=$arch go build -trimpath -ldflags "-H=windowsgui -s -w" -o dist/$arch/OpenDM.exe .
-            cp -r extension dist/$arch/browser-extension
-            cp README.md LICENSE dist/$arch/
-            (cd dist/$arch && zip -qr ../OpenDM-windows-$arch.zip .)
-          done
-      - uses: softprops/action-gh-release@v2
-        if: startsWith(github.ref, 'refs/tags/')
         with:
+          go-version: "1.22"
+      - name: Test
+        run: go test ./...
+      - name: Build Windows zips
+        run: |
+          for arch in amd64 arm64; do
+            label=$arch; [ "$arch" = amd64 ] && label=x64
+            out=dist/$arch/OpenDM
+            GOOS=windows GOARCH=$arch go build -trimpath -ldflags "-H=windowsgui -s -w" -o $out/OpenDM.exe .
+            cp -r extension $out/browser-extension
+            cp README.md LICENSE $out/
+            (cd dist/$arch && zip -qr ../OpenDM-${VERSION}-windows-${label}.zip OpenDM)
+          done
+          ls -la dist
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: OpenDM-${{ env.VERSION }}-windows
+          path: dist/*.zip
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.VERSION }}
+          name: OpenDM ${{ env.VERSION }}
+          target_commitish: ${{ github.sha }}
           files: dist/*.zip
+          body: |
+            **Download:** `OpenDM-${{ env.VERSION }}-windows-x64.zip` for almost all PCs (`arm64` is for ARM laptops such as Snapdragon Surface).
+
+            1. Unzip anywhere and run `OpenDM.exe`.
+            2. Windows SmartScreen may warn because the exe isn't code-signed: click **More info** → **Run anyway**.
+            3. For browser integration, see **Settings → Browser integration** in the app.
