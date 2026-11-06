@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<style>
+  :root { --bg:#161922; --line:#262b3b; --text:#e6e8ef; --muted:#8b91a5; --accent:#6366f1; color-scheme: dark; }
+  @media (prefers-color-scheme: light) { :root { --bg:#fff; --line:#e3e6ee; --text:#1b1e28; --muted:#6b7185; color-scheme: light; } }
+  body { margin:0; width:290px; font:13px/1.4 "Segoe UI", system-ui, sans-serif; background:var(--bg); color:var(--text); }
+  header { display:flex; align-items:center; gap:9px; padding:12px 14px; border-bottom:1px solid var(--line); font-weight:700; font-size:14px; }
+  header img { width:22px; height:22px; }
+  #status { margin-left:auto; font-size:11.5px; font-weight:500; display:flex; align-items:center; gap:5px; color:var(--muted); }
+  #status i { width:8px; height:8px; border-radius:50%; background:#64748b; }
+  #status.on i { background:#22c55e; } #status.off i { background:#ef4444; }
+  main { padding:12px 14px; display:flex; flex-direction:column; gap:11px; }
+  .row { display:flex; align-items:center; justify-content:space-between; gap:10px; }
+  label small { display:block; color:var(--muted); font-size:11.5px; }
+  input[type=number], input[type=text] { width:90px; background:transparent; color:var(--text); border:1px solid var(--line); border-radius:6px; padding:4px 7px; font:inherit; }
+  input[type=text] { width:120px; }
+  .switch { position:relative; width:38px; height:22px; flex:none; }
+  .switch input { opacity:0; width:0; height:0; }
+  .switch span { position:absolute; inset:0; background:#3a4054; border-radius:22px; transition:.15s; cursor:pointer; }
+  .switch span::before { content:""; position:absolute; width:16px; height:16px; left:3px; top:3px; background:#fff; border-radius:50%; transition:.15s; }
+  .switch input:checked + span { background:var(--accent); }
+  .switch input:checked + span::before { transform:translateX(16px); }
+  button { width:100%; padding:8px; border:0; border-radius:8px; background:linear-gradient(135deg,#6366f1,#4f7cf0); color:#fff; font:inherit; font-weight:600; cursor:pointer; }
+  .hint { color:var(--muted); font-size:11.5px; }
+</style>
+</head>
+<body>
+<header><img src="icons/icon32.png" alt="">OpenDM<span id="status"><i></i><em>checking…</em></span></header>
+<main>
+  <div class="row"><label>Capture browser downloads<small>Off = browser downloads normally</small></label>
+    <label class="switch"><input type="checkbox" id="enabled"><span></span></label></div>
+  <div class="row"><label>Skip files smaller than<small>KB, when size is known (0 = none)</small></label><input type="number" id="minSizeKB" min="0"></div>
+  <div class="row"><label>Never capture<small>extensions, comma separated</small></label><input type="text" id="skipExt" placeholder="jpg, png"></div>
+  <div class="row"><label>OpenDM port<small>Must match OpenDM settings</small></label><input type="number" id="port" min="1024" max="65535"></div>
+  <button id="open">Open OpenDM</button>
+  <div class="hint">Tip: right-click any link → <b>Download with OpenDM</b>.</div>
+</main>
+<script src="popup.js"></script>
+</body>
+</html>

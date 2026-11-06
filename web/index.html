@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>OpenDM</title>
+<link rel="icon" href="icon-32.png">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<header class="topbar">
+  <div class="brand"><img src="icon-64.png" alt=""><span>OpenDM</span></div>
+  <div class="tools">
+    <button class="btn primary" id="btnAdd" title="Add URL (Ctrl+V anywhere pastes a link)">
+      <svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg>Add URL</button>
+    <span class="sep"></span>
+    <button class="btn" data-act="resume" title="Resume selected"><svg viewBox="0 0 24 24"><path d="M7 5l12 7-12 7z"/></svg>Resume</button>
+    <button class="btn" data-act="pause" title="Pause selected"><svg viewBox="0 0 24 24"><path d="M8 5v14M16 5v14"/></svg>Pause</button>
+    <button class="btn" data-act="restart" title="Restart selected from zero"><svg viewBox="0 0 24 24"><path d="M4 12a8 8 0 1 0 2.4-5.7M4 4v4h4"/></svg>Restart</button>
+    <button class="btn" data-act="remove" title="Delete from list (Del)"><svg viewBox="0 0 24 24"><path d="M5 7h14M10 7V4h4v3M7 7l1 13h8l1-13"/></svg>Delete</button>
+    <span class="sep"></span>
+    <button class="btn" id="btnResumeAll" title="Resume all"><svg viewBox="0 0 24 24"><path d="M4 5l8 7-8 7zM12 5l8 7-8 7z"/></svg>Start all</button>
+    <button class="btn" id="btnPauseAll" title="Pause all"><svg viewBox="0 0 24 24"><rect x="5" y="5" width="14" height="14" rx="2"/></svg>Stop all</button>
+  </div>
+  <div class="right">
+    <div class="search"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="6"/><path d="M20 20l-4.5-4.5"/></svg><input id="search" placeholder="Search downloads" spellcheck="false"></div>
+    <div class="total" id="totalSpeed" title="Total download speed">0 B/s</div>
+    <button class="icon-btn" id="btnSettings" title="Settings"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/></svg></button>
+  </div>
+</header>
+
+<aside class="sidebar">
+  <div class="group">Status</div>
+  <nav id="statusNav">
+    <a data-f="all" class="on">All downloads<b></b></a>
+    <a data-f="downloading">Downloading<b></b></a>
+    <a data-f="queued">Queued<b></b></a>
+    <a data-f="unfinished">Paused &amp; failed<b></b></a>
+    <a data-f="completed">Finished<b></b></a>
+  </nav>
+  <div class="group">Categories</div>
+  <nav id="catNav">
+    <a data-c="Video"><i class="dot v"></i>Video<b></b></a>
+    <a data-c="Music"><i class="dot m"></i>Music<b></b></a>
+    <a data-c="Documents"><i class="dot d"></i>Documents<b></b></a>
+    <a data-c="Compressed"><i class="dot z"></i>Compressed<b></b></a>
+    <a data-c="Programs"><i class="dot p"></i>Programs<b></b></a>
+    <a data-c="Images"><i class="dot i"></i>Images<b></b></a>
+    <a data-c="General"><i class="dot g"></i>General<b></b></a>
+  </nav>
+  <div class="side-foot">
+    <button class="link" id="btnOpenDir">Open download folder</button>
+    <button class="link" id="btnClear">Clear finished from list</button>
+  </div>
+</aside>
+
+<main class="main">
+  <div class="table-wrap" id="tableWrap">
+    <table class="list">
+      <thead><tr>
+        <th class="c-name">File name</th>
+        <th class="c-size">Size</th>
+        <th class="c-prog">Progress</th>
+        <th class="c-speed">Speed</th>
+        <th class="c-eta">Time left</th>
+        <th class="c-date">Added</th>
+      </tr></thead>
+      <tbody id="rows"></tbody>
+    </table>
+    <div class="empty" id="empty">
+      <img src="icon-192.png" alt="">
+      <h2>No downloads here yet</h2>
+      <p>Click <b>Add URL</b>, press <kbd>Ctrl</kbd>+<kbd>V</kbd> with a link copied, drop a link onto this window,<br>or install the browser extension to catch downloads automatically.</p>
+    </div>
+  </div>
+  <section class="details" id="details" hidden></section>
+</main>
+
+<!-- Add dialog -->
+<dialog id="dlgAdd">
+  <form method="dialog" class="dlg">
+    <h3>Add download</h3>
+    <label>Address<small>One link per line to add several at once</small>
+      <textarea id="addUrls" rows="3" spellcheck="false" placeholder="https://example.com/file.zip"></textarea></label>
+    <div class="probe" id="probe"></div>
+    <div class="row2">
+      <label>Save as<input id="addName" spellcheck="false" placeholder="Detected automatically"></label>
+      <label class="narrow">Connections<input id="addConns" type="number" min="1" max="32"></label>
+    </div>
+    <label>Folder<small>Leave empty to use the default (sorted by category)</small>
+      <div class="inline"><input id="addDir" spellcheck="false" placeholder="Default download folder"><button type="button" class="btn" id="addBrowse">Browse…</button></div></label>
+    <details class="adv"><summary>Advanced: referer &amp; cookies</summary>
+      <label>Referer<input id="addRef" spellcheck="false"></label>
+      <label>Cookie header<input id="addCookie" spellcheck="false"></label>
+    </details>
+    <div class="actions">
+      <button type="button" class="btn" value="cancel" id="addCancel">Cancel</button>
+      <button type="button" class="btn" id="addLater">Download later</button>
+      <button type="button" class="btn primary" id="addStart">Start download</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Settings dialog -->
+<dialog id="dlgSettings">
+  <form method="dialog" class="dlg wide">
+    <h3>Settings</h3>
+    <div class="tabs"><a data-tab="general" class="on">General</a><a data-tab="conn">Connection</a><a data-tab="browser">Browser integration</a><a data-tab="about">About</a></div>
+    <div class="tab" data-tab="general">
+      <label>Default download folder
+        <div class="inline"><input id="sDir" spellcheck="false"><button type="button" class="btn" id="sBrowse">Browse…</button></div></label>
+      <label class="check"><input type="checkbox" id="sSort"> Sort into category folders (Video, Music, Documents…)</label>
+      <label class="check"><input type="checkbox" id="sNotify"> Show a notification when a download finishes</label>
+      <label class="check"><input type="checkbox" id="sAppWin"> Open in its own app window (Edge/Chrome app mode)</label>
+      <label class="check" id="sAutoWrap"><input type="checkbox" id="sAuto"> Start OpenDM when Windows starts (in the tray)</label>
+    </div>
+    <div class="tab" data-tab="conn" hidden>
+      <div class="row2">
+        <label>Connections per download<small>IDM uses 8; up to 32</small><input id="sConns" type="number" min="1" max="32"></label>
+        <label>Simultaneous downloads<input id="sMax" type="number" min="1" max="20"></label>
+      </div>
+      <div class="row2">
+        <label>Speed limit (KB/s)<small>0 = unlimited</small><input id="sLimit" type="number" min="0"></label>
+        <label>Retries per connection<input id="sRetries" type="number" min="0" max="50"></label>
+      </div>
+      <label>Proxy<small>e.g. http://proxy.company.local:8080 — empty uses system environment</small><input id="sProxy" spellcheck="false"></label>
+      <label>User-Agent<input id="sUA" spellcheck="false"></label>
+      <label class="narrow">Local port<small>Must match the browser extension. Takes effect after restart.</small><input id="sPort" type="number" min="1024" max="65535"></label>
+    </div>
+    <div class="tab" data-tab="browser" hidden>
+      <p>The OpenDM extension hands browser downloads (with cookies and referer) to OpenDM automatically and adds <b>Download with OpenDM</b> to the right-click menu. Works in Edge, Chrome, Brave, Opera and Vivaldi.</p>
+      <ol class="steps">
+        <li><button type="button" class="btn primary" id="btnExport">Unpack extension folder</button><span id="extPath"></span></li>
+        <li>Open <code>edge://extensions</code> (or <code>chrome://extensions</code>) and switch on <b>Developer mode</b>.</li>
+        <li>Click <b>Load unpacked</b> and choose the folder that just opened.</li>
+        <li>Pin the OpenDM icon. Click it any time to switch capturing on or off.</li>
+      </ol>
+    </div>
+    <div class="tab" data-tab="about" hidden>
+      <p><b>OpenDM</b> <span id="ver"></span> — open-source download manager. MIT licence.</p>
+      <p class="muted">Multi-connection downloads with dynamic segmentation, pause/resume across restarts, queue, speed limiter, category folders and browser integration. Data folder: <code id="dataDir"></code></p>
+      <button type="button" class="btn danger" id="btnQuit">Exit OpenDM</button>
+    </div>
+    <div class="actions">
+      <button type="button" class="btn" id="sCancel">Cancel</button>
+      <button type="button" class="btn primary" id="sSave">Save</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Confirm delete -->
+<dialog id="dlgDelete">
+  <form method="dialog" class="dlg small">
+    <h3 id="delTitle">Delete download?</h3>
+    <label class="check"><input type="checkbox" id="delFile"> Also delete the downloaded file from disk</label>
+    <div class="actions">
+      <button type="button" class="btn" id="delCancel">Cancel</button>
+      <button type="button" class="btn danger" id="delOk">Delete</button>
+    </div>
+  </form>
+</dialog>
+
+<!-- Change URL -->
+<dialog id="dlgUrl">
+  <form method="dialog" class="dlg">
+    <h3>Refresh download address</h3>
+    <p class="muted">Links from many sites expire. Paste a fresh link to the same file and OpenDM will continue from where it stopped.</p>
+    <label>New address<input id="newUrl" spellcheck="false"></label>
+    <div class="actions">
+      <button type="button" class="btn" id="urlCancel">Cancel</button>
+      <button type="button" class="btn primary" id="urlOk">Update &amp; resume</button>
+    </div>
+  </form>
+</dialog>
+
+<div class="ctx" id="ctx" hidden></div>
+<div class="toasts" id="toasts"></div>
+<div class="drop" id="drop" hidden><div>Drop link to download</div></div>
+<script src="app.js"></script>
+</body>
+</html>
